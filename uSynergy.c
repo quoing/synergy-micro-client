@@ -206,12 +206,26 @@ static void sSendJoystickCallback(uSynergyContext *context, uint8_t joyNum)
 static void sProcessMessage(uSynergyContext *context, const uint8_t *message)
 {
 	// We have a packet!
-	if (memcmp(message+4, "Synergy", 7)==0)
+       int login_packet=0;
+
+        if (memcmp(message+4, "Barrier", 7)==0)
+        {
+                // Barrie Welcome message
+                //              kMsgHello                       = "Barrier%2i%2i"
+                //              kMsgHelloBack           = "Barrier%2i%2i%s"
+                sAddString(context, "Barrier");
+                login_packet = 1;
+        }
+	else if (memcmp(message+4, "Synergy", 7)==0)
 	{
 		// Welcome message
 		//		kMsgHello			= "Synergy%2i%2i"
 		//		kMsgHelloBack		= "Synergy%2i%2i%s"
 		sAddString(context, "Synergy");
+		login_packet = 1;
+	}
+        if (login_packet == 1)
+        {
 		sAddUInt16(context, USYNERGY_PROTOCOL_MAJOR);
 		sAddUInt16(context, USYNERGY_PROTOCOL_MINOR);
 		sAddUInt32(context, (uint32_t)strlen(context->m_clientName));
